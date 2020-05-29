@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdmiralQuiz - Vue.js</title>
+    <!-- Bootstrap CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet"> <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- FontAwesome -->
+    <script src="https://kit.fontawesome.com/cea976903a.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+    <!-- Button trigger modal -->
+    <div class="container text-center py-5">
+        <div class="row">
+            <div class="col-md-12">
+                <button type="button" class="btn btn-quiz btn-primary" data-toggle="modal" data-target="#admiralquiz">
+                    Начать тест
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Start // AdmiralQuiz Modal -->
+    <div class="modal fade" id="admiralquiz" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content rounded-0 shadow">
+                <div class="modal-body p-0">
+                    <div class="container text-center">
+                        <div class="row">
+                            <div class="col-lg-3 d-none d-lg-block d-xl-block bg-gray pt-5">
+                                <div class="quiz-font-small helper-text bg-white p-3" v-if="!(currentID == maxID)">
+                                    {{ questions[currentID].helper }}
+                                </div>
+                                <div class="quiz-font-small helper-text bg-white p-3" v-else>
+                                    {{ helperLastSlide }}
+                                </div>
+                                <img class="helper-img img-fluid" :src="'img/character/' + (currentID + 1) + '.png'">
+                            </div>
+                            <div class="col-lg-9 col-md-12">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <button type="button" class="close pt-3 pr-3" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="row pb-4">
+                                    <div class="col-md-12">
+                                        <p class="quiz-font-small">Пройдите тест и получите рекомендацию по выбору обогревателя</p>
+                                    </div>
+                                </div>
+
+                                <div v-for="object in questions">
+                                    <div :hidden="object.enabled == false">
+
+                                        <div class="row mb-3">
+                                            <div class="col-md-12">
+                                                <p class="quiz-title">{{ object.question }}</p>
+                                            </div>
+                                        </div>
+
+
+                                        <div class="row mb-5" v-if="object.answers">
+                                            <div class="col-md-3 col-sm-6 col-6 mb-3" v-for="answer in object.answers">
+                                                <div class="card" @click="selectAnswer(object.id, answer)">
+                                                    <div class="view">
+                                                        <img class="card-img-top" :src="'img/quiz/' + (currentID + 1) + '/' + (object.answers.indexOf(answer) + 1) + '.jpg'">
+                                                        <a>
+                                                            <div class="mask animated pulse" :class="{ active: results[currentID] == answer } "></div>
+                                                        </a>
+                                                    </div>
+                                                    <h4 class="card-title d-flex align-items-center justify-content-center mb-0 text-center p-3">{{ answer }}</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                        <div class="row mb-5" v-else>
+                                            <div class="col-md-12">
+                                                <input type="text" class="arti-form my-5" :placeholder="object.placeholder" v-model="results[object.id]">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3" :hidden="!(currentID == maxID)">
+                                    <div class="col-md-12">
+                                        <p class="quiz-title">Как с вами можно связаться?</p>
+                                        <p class="quiz-font-description">Заполните простую форму и мы рассмотрим вашу <br> заявку, в течении 2-х часов.</p>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-5" :hidden="!(currentID == maxID)">
+                                    
+                                    <div class="col-md-12">
+                                        <!-- Hidden Required Fields -->
+                                        <input type="hidden" name="project_name" value="Заявка налогового консалтинга">
+                                        <input type="hidden" name="admin_email" value="mail@riddleweb.ru">
+                                        <input type="hidden" name="form_subject" value="Заявка с формы">
+                                        <!-- /Hidden Required Fields -->
+                                        <input type="text" class="arti-form" placeholder="Имя" name="name" v-model="results[maxID]" required>
+                                        <input type="text" class="arti-form" placeholder="Телефон" name="phone" v-model="results[maxID + 1]" required>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="col-md-12 text-center">
+                                        <button type="button" :hidden="currentID == false" @click="questionListener(false)" class="btn btn-quiz-back waves-effect waves-light text-left"><i class="fas fa-angle-double-left"></i></button>
+                                        <button type="button" :hidden="currentID == maxID" :disabled="!results[currentID]" @click="questionListener(true)" class="btn btn-quiz waves-effect waves-light pb-3">Продолжить</button>
+                                        <button type="button" :hidden="!(currentID == maxID)" @click="" class="btn btn-quiz waves-effect waves-light pb-3">Отправить</button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 4px;">
+                        <div class="progress-bar" role="progressbar" :style="'width:' + ((currentID / maxID) * 100) + '%;'" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End // AdmiralQuiz Modal -->
+
+    <!-- Bootstrap CDN -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <!-- Vue.js CDN -->
+    <script src="https://unpkg.com/vue@2.6.11/dist/vue.js"></script>
+
+    <!-- Custom -->
+    <script src="js/script.js"></script>
+</body>
+
+</html>
